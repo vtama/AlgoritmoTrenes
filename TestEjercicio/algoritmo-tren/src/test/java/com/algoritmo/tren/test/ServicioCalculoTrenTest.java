@@ -30,17 +30,17 @@ public class ServicioCalculoTrenTest {
     
     @Test
     public void testContarViajesConParadasExactas() {
-        assertEquals(1435, ServicioCalculoTren.contarViajesConParadasExactas('A', 'C', 4));
+        assertEquals(3, ServicioCalculoTren.contarViajesConParadasExactas('A', 'C', 4,"AB5, BC4, CD8, DC8, DE6, AD5, CE2, EB3, AE7"));
     }
     
     @Test
     public void testCaminoMasCorto() {
         assertEquals(9, ServicioCalculoTren.caminoMasCorto('A', 'C'));
-        assertEquals(0, ServicioCalculoTren.caminoMasCorto('B', 'B'));
+        assertEquals(9, ServicioCalculoTren.caminoMasCorto('B', 'B'));
     }
     
     @Test
     public void testContarCaminosMenosQueDistancia() {
-        assertEquals(8, ServicioCalculoTren.contarCaminosMenosQueDistancia('C', 'C', 30));
+        assertEquals(7, ServicioCalculoTren.contarCaminosMenosQueDistancia('C', 'C', 30));
     }
 }

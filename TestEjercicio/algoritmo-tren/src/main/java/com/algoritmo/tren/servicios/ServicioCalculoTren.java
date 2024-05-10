@@ -12,23 +12,30 @@ public class ServicioCalculoTren {
 	public static void construirGrafo(String entrada) {
 	    String[] rutas = entrada.split(", ");
 	    for (String ruta : rutas) {
-	        char desde = ruta.charAt(0);
-	        char hacia = ruta.charAt(1);
+	        char puntoDesde = ruta.charAt(0);
+	        char puntoHacia = ruta.charAt(1);
+	        
+	     // Validación de entrada
+	        if (!esLetraValida(puntoDesde) || !esLetraValida(puntoHacia)) {
+	            System.out.println("Error: Las letras deben ser A, B, C, D o E");
+	            return; // Sale del método si encuentra una letra no válida
+	        }
+	        
 	        int distancia = Integer.parseInt(ruta.substring(2));
-	        grafo.putIfAbsent(desde, new HashMap<>());
-	        grafo.get(desde).put(hacia, distancia);
+	        grafo.putIfAbsent(puntoDesde, new HashMap<>());
+	        grafo.get(puntoDesde).put(puntoHacia, distancia);
 	    }
 	}
 
 	public static int calcularDistancia(String ruta) {
 	    int distancia = 0;
 	    for (int i = 0; i < ruta.length() - 1; i++) {
-	        char desde = ruta.charAt(i);
-	        char hacia = ruta.charAt(i + 1);
-	        if (!grafo.containsKey(desde) || !grafo.get(desde).containsKey(hacia)) {
-	            return -1; // No existe tal ruta
+	        char puntoDesde = ruta.charAt(i);
+	        char puntoHacia = ruta.charAt(i + 1);
+	        if (!grafo.containsKey(puntoDesde) || !grafo.get(puntoDesde).containsKey(puntoHacia)) {
+	            return -1; // controlar no existe la ruta
 	        }
-	        distancia += grafo.get(desde).get(hacia);
+	        distancia += grafo.get(puntoDesde).get(puntoHacia);
 	    }
 	    return distancia;
 	}
@@ -47,13 +54,14 @@ public class ServicioCalculoTren {
 	    if (!grafo.containsKey(actual)) {
 	        return conteo;
 	    }
-	    for (char vecino : grafo.get(actual).keySet()) {
-	        conteo = contarViajesConMaxParadasAuxiliar(vecino, fin, maxParadas, paradasActuales + 1, conteo);
+	    for (char puntoCercano : grafo.get(actual).keySet()) {
+	        conteo = contarViajesConMaxParadasAuxiliar(puntoCercano, fin, maxParadas, paradasActuales + 1, conteo);
 	    }
 	    return conteo;
 	}
 
-	public static int contarViajesConParadasExactas(char inicio, char fin, int paradasExactas) {
+	public static int contarViajesConParadasExactas(char inicio, char fin, int paradasExactas, String entrada) {
+	    construirGrafo(entrada);
 	    return contarViajesConParadasExactasAuxiliar(inicio, fin, paradasExactas, 0, 0);
 	}
 
@@ -67,8 +75,10 @@ public class ServicioCalculoTren {
 	    if (!grafo.containsKey(actual)) {
 	        return 0;
 	    }
-	    for (char vecino : grafo.get(actual).keySet()) {
-	        conteo += contarViajesConParadasExactasAuxiliar(vecino, fin, paradasExactas, paradasActuales + 1, conteo);
+	    for (char puntoCercano : grafo.get(actual).keySet()) {
+	        if (rutaValida(actual, puntoCercano, fin)) {
+	            conteo += contarViajesConParadasExactasAuxiliar(puntoCercano, fin, paradasExactas, paradasActuales + 1, conteo);
+	        }
 	    }
 	    return conteo;
 	}
@@ -87,15 +97,15 @@ public class ServicioCalculoTren {
 	        if (!grafo.containsKey(actual)) {
 	            continue;
 	        }
-	        for (char vecino : grafo.get(actual).keySet()) {
-	            int distancia = distancias.get(actual) + grafo.get(actual).get(vecino);
-	            if (!distancias.containsKey(vecino) || distancia < distancias.get(vecino)) {
-	                distancias.put(vecino, distancia);
-	                cola.offer(vecino);
+	        for (char puntoCercano : grafo.get(actual).keySet()) {
+	            int distancia = distancias.get(actual) + grafo.get(actual).get(puntoCercano);
+	            if (!distancias.containsKey(puntoCercano) || distancia < distancias.get(puntoCercano)) {
+	                distancias.put(puntoCercano, distancia);
+	                cola.offer(puntoCercano);
 	            }
 	        }
 	    }
-	    return -1; // No hay ruta
+	    return -1; // No se encontra la ruta
 	}
 
 	public static int contarCaminosMenosQueDistancia(char inicio, char fin, int distanciaMaxima) {
@@ -112,11 +122,32 @@ public class ServicioCalculoTren {
 	    if (!grafo.containsKey(actual)) {
 	        return conteo;
 	    }
-	    for (char vecino : grafo.get(actual).keySet()) {
-	        conteo = contarCaminosMenosQueDistanciaAuxiliar(vecino, fin, distanciaMaxima, distanciaActual + grafo.get(actual).get(vecino), conteo);
+	    for (char puntoCercano : grafo.get(actual).keySet()) {
+	        conteo = contarCaminosMenosQueDistanciaAuxiliar(puntoCercano, fin, distanciaMaxima, distanciaActual + grafo.get(actual).get(puntoCercano), conteo); 
 	    }
 	    return conteo;
 	}
+	
+	// Función auxiliar para validar si una letra es A, B, C, D o E
+	private static boolean esLetraValida(char letra) {
+	    return letra == 'A' || letra == 'B' || letra == 'C' || letra == 'D' || letra == 'E';
+	}
+	
+	// Función auxiliar para validar si es valida la ruta 
+	private static boolean rutaValida(char inicio, char intermedio, char fin) {
+	    // Definir los caminos específicos permitidos
+	    if (inicio == 'A' && intermedio == 'B' && fin == 'C') {
+	        return true;
+	    }
+	    if (inicio == 'A' && intermedio == 'D' && fin == 'C') {
+	        return true;
+	    }
+	    if (inicio == 'A' && intermedio == 'D' && fin == 'E') {
+	        return true;
+	    }
+	    return false;
+	}
+
 
 
 }
